@@ -36,11 +36,12 @@
 
         <!-- Strength Training Input -->
         <div v-if="workoutType === 'strength'" class="flex flex-col gap-y-4">
-          <div class="flex flex-col gap-x-6 gap-y-2 relative md:flex-row" v-for="(item, index) in exercise"
+          <div class="flex flex-col gap-x-6 gap-y-2 relative md:flex-row" v-for="(item, index) in exercises"
             :key="index">
             <div class="div flex flex-col md:1/3">
-              <label for="exercise-name" class="mb-1 text-sm text-at-light-green">Exercise</label>
-              <input required type="text" class="p-2 w-full text-gray-500 focus:outline-none" v-model="item.exercise" />
+              <label for="exercises-name" class="mb-1 text-sm text-at-light-green">Exercises</label>
+              <input required type="text" class="p-2 w-full text-gray-500 focus:outline-none"
+                v-model="item.exercises" />
             </div>
             <div class="div flex flex-col flex-1">
               <label for="sets" class="mb-1 text-sm text-at-light-green">Sets</label>
@@ -64,7 +65,7 @@
 
         <!-- Cardio Input -->
         <div v-if="workoutType === 'cardio'" class="flex flex-col gap-y-4">
-          <div class="flex flex-col gap-x-6 gap-y-2 relative md:flex-row" v-for="(item, index) in exercise"
+          <div class="flex flex-col gap-x-6 gap-y-2 relative md:flex-row" v-for="(item, index) in exercises"
             :key="index">
             <div class="div flex flex-col md:1/3">
               <label for="cardio-type" class="mb-1 text-sm text-at-light-green">Type</label>
@@ -79,6 +80,10 @@
               <input required type="text" class="p-2 w-full text-gray-500 focus:outline-none" v-model="item.distance" />
             </div>
             <div class="div flex flex-col flex-1">
+              <label for="duration" class="mb-1 text-sm text-at-light-green">Duration</label>
+              <input required type="text" class="p-2 w-full text-gray-500 focus:outline-none" v-model="item.duration" />
+            </div>
+            <div class="div flex flex-col flex-1">
               <label for="pace" class="mb-1 text-sm text-at-light-green">Pace</label>
               <input required type="text" class="p-2 w-full text-gray-500 focus:outline-none" v-model="item.pace" />
             </div>
@@ -90,7 +95,7 @@
             Add Exercise</button>
         </div>
 
-        <button type="button"
+        <button type="submit"
           class="mt-6 py-2 px-6 rounded-sm self-start text-sm text-white bg-at-light-green duration-200 border-solid border-2 border-transparent hover:border-at-light hover:bg-white hover:text-at-light-green">
           Record Workout</button>
       </form>
@@ -110,16 +115,16 @@ export default {
     // Create data
     const workoutName = ref("");
     const workoutType = ref("select-workout");
-    const exercise = ref([]);
+    const exercises = ref([]);
     const statusMsg = ref(null)
     const errorMsg = ref(null)
 
     // Add exercise
     const addExercise = () => {
       if (workoutType.value === 'strength') {
-        exercise.value.push({
+        exercises.value.push({
           id: uid(),
-          exercise: "",
+          exercises: "",
           sets: "",
           reps: "",
           weight: "",
@@ -127,7 +132,7 @@ export default {
         return
       }
 
-      exercise.value.push({
+      exercises.value.push({
         id: uid(),
         cardioType: "",
         distance: "",
@@ -137,8 +142,8 @@ export default {
     };
     // Delete exercise
     const deleteExercise = (id) => {
-      if (exercise.value.length > 1) {
-        exercise.value = exercise.value.filter((exercise) => exercise.id !== id);
+      if (exercises.value.length > 1) {
+        exercises.value = exercises.value.filter((exercises) => exercises.id !== id);
         return
       }
       errorMsg.value = "Error: Cannot remove, need to at least have one exercise";
@@ -149,18 +154,19 @@ export default {
 
     // Listens for chaging of workout type input
     const workoutChange = () => {
-      exercise.value = []
+      exercises.value = []
       addExercise()
     }
 
     // Create workout
     const createWorkout = async () => {
+      console.log('workout clicked')
       try {
         const { error } = await supabase.from('workouts').insert([
           {
             workoutName: workoutName.value,
             workoutType: workoutType.value,
-            exercise: exercise.value
+            exercises: exercises.value
           }
         ])
 
@@ -168,11 +174,12 @@ export default {
         statusMsg.value = 'Success: Workout Created!'
         workoutName.value = null
         workoutType.value = "select-workout"
-        exercise.value = []
+        exercises.value = []
 
         setTimeout(() => {
           statusMsg.value = false
         }, 5000)
+
       } catch (error) {
         errorMsg.value = `Error: ${error.message}`
         setTimeout(() => {
@@ -181,7 +188,7 @@ export default {
       }
     }
 
-    return { workoutName, workoutType, exercise, statusMsg, errorMsg, addExercise, workoutChange, deleteExercise, createWorkout };
+    return { workoutName, workoutType, exercises, statusMsg, errorMsg, addExercise, workoutChange, deleteExercise, createWorkout };
   },
 };
 </script>
